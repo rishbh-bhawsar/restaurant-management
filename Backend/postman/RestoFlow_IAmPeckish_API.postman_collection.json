@@ -1,0 +1,870 @@
+{
+  "info": {
+    "_postman_id": "a7f3c910-4b2e-4f19-9d5a-restoflow0001",
+    "name": "RestoFlow - IAmPeckish API",
+    "description": "Complete Postman collection for RestoFlow POS Backend & IAmPeckish Connect API integration with automatic MySQL (restoflow_pos) synchronization.\n\nQuick Start:\n1. Open Collection 'Variables' tab and fill in clientId, clientSecret, username, password, restaurantUuid.\n2. Run '1. Authentication -> Get Authorize URL' or open /api/peckish/auth/login in browser to obtain the authorization code.\n3. Paste the code into 'authCode' variable and run '1. Authentication -> Exchange Code for Token' (accessToken & refreshToken auto-save to collection variables).\n4. Run '2. Restaurants -> Get Restaurants' and any other data endpoint to fetch & persist into MySQL.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+    { "key": "peckishBasePath", "value": "/api/peckish", "type": "string" },
+    { "key": "peckishApiUrl", "value": "https://api.iampeckish.com/connect/api/", "type": "string" },
+    { "key": "username", "value": "", "type": "string" },
+    { "key": "password", "value": "", "type": "string" },
+    { "key": "clientId", "value": "", "type": "string" },
+    { "key": "clientSecret", "value": "", "type": "string" },
+    { "key": "redirectUri", "value": "http://localhost:5000/api/peckish/oauth/callback", "type": "string" },
+    { "key": "authCode", "value": "", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "restaurantUuid", "value": "", "type": "string" },
+    { "key": "supplierRef", "value": "", "type": "string" },
+    { "key": "stocktakeUuid", "value": "", "type": "string" },
+    { "key": "entityId", "value": "1", "type": "string" },
+    { "key": "branchId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "0. Core & Health",
+      "item": [
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Health Check (Server + MySQL)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Step 1A - Get Authorize URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/authorize?client_id={{clientId}}&redirect_uri={{redirectUri}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "authorize"],
+              "query": [
+                { "key": "client_id", "value": "{{clientId}}" },
+                { "key": "redirect_uri", "value": "{{redirectUri}}" },
+                { "key": "redirect", "value": "false", "disabled": true }
+              ]
+            },
+            "description": "Returns the IAmPeckish OAuth authorization URL. Open that URL in your browser to log in and capture the ?code=... parameter."
+          }
+        },
+        {
+          "name": "Step 1B - Browser OAuth Login (Redirect)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/login?client_id={{clientId}}&redirect_uri={{redirectUri}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "login"],
+              "query": [
+                { "key": "client_id", "value": "{{clientId}}" },
+                { "key": "redirect_uri", "value": "{{redirectUri}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Step 1C - OAuth Callback (Code Exchange)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const tokenData = res.tokens || res.data || res;",
+                  "if (tokenData && tokenData.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', tokenData.access_token);",
+                  "}",
+                  "if (tokenData && tokenData.refresh_token) {",
+                  "    pm.collectionVariables.set('refreshToken', tokenData.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/oauth/callback?code={{authCode}}&redirect_uri={{redirectUri}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["oauth", "callback"],
+              "query": [
+                { "key": "code", "value": "{{authCode}}" },
+                { "key": "redirect_uri", "value": "{{redirectUri}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Step 2 - Exchange Code for Access & Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const tokenData = res.data || res;",
+                  "if (tokenData && tokenData.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', tokenData.access_token);",
+                  "    console.log('Saved accessToken to collection variables');",
+                  "}",
+                  "if (tokenData && tokenData.refresh_token) {",
+                  "    pm.collectionVariables.set('refreshToken', tokenData.refresh_token);",
+                  "    console.log('Saved refreshToken to collection variables');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grant_type\": \"authorization_code\",\n  \"code\": \"{{authCode}}\",\n  \"client_id\": \"{{clientId}}\",\n  \"client_secret\": \"{{clientSecret}}\",\n  \"redirect_uri\": \"{{redirectUri}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/token",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "token"]
+            },
+            "description": "Exchanges the authorization code for access_token and refresh_token, and automatically stores both in Postman collection variables."
+          }
+        },
+        {
+          "name": "Refresh Access Token (using refresh_token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const tokenData = res.data || res;",
+                  "if (tokenData && tokenData.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', tokenData.access_token);",
+                  "}",
+                  "if (tokenData && tokenData.refresh_token) {",
+                  "    pm.collectionVariables.set('refreshToken', tokenData.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grant_type\": \"refresh_token\",\n  \"refresh_token\": \"{{refreshToken}}\",\n  \"client_id\": \"{{clientId}}\",\n  \"client_secret\": \"{{clientSecret}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/token",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "token"]
+            }
+          }
+        },
+        {
+          "name": "Get Auth Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/status",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "status"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile / Bearer Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/me",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Sign In (with URL_PARAMETER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/signin?URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "signin"],
+              "query": [
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Test Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicationId\": \"{{clientId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/test-token?URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "test-token"],
+              "query": [
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Authorize Connect",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"{{clientId}}\",\n  \"client_secret\": \"{{clientSecret}}\",\n  \"redirect_uri\": \"{{redirectUri}}\",\n  \"response_type\": \"code\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/authorize?URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "authorize"],
+              "query": [
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate Full Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) pm.collectionVariables.set('accessToken', res.accessToken);",
+                  "if (res.refreshToken) pm.collectionVariables.set('refreshToken', res.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"clientId\": \"{{clientId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/generate-token?URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "generate-token"],
+              "query": [
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token (Controller Endpoint)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"{{clientId}}\",\n  \"client_secret\": \"{{clientSecret}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/auth/refresh?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["auth", "refresh"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Restaurants",
+      "item": [
+        {
+          "name": "Get Restaurants",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const list = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.restaurants || []);",
+                  "if (list.length > 0) {",
+                  "    const uuid = list[0].restaurant_uuid || list[0].uuid || list[0].id;",
+                  "    if (uuid && !pm.collectionVariables.get('restaurantUuid')) {",
+                  "        pm.collectionVariables.set('restaurantUuid', uuid);",
+                  "        console.log('Auto-saved restaurantUuid:', uuid);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/restaurants?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["restaurants"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Restaurant By UUID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/restaurants/{{restaurantUuid}}?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["restaurants", "{{restaurantUuid}}"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Units",
+      "item": [
+        {
+          "name": "Get Units",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/units?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["units"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unit Conversions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/units/conversions?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["units", "conversions"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Items & Catalog",
+      "item": [
+        {
+          "name": "Get Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/items?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["items"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Ingredients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/ingredients?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["ingredients"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Preparations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/preparations?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["preparations"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/products?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Suppliers",
+      "item": [
+        {
+          "name": "Get Suppliers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/suppliers?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["suppliers"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Supplier By Ref",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/suppliers/{{supplierRef}}?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["suppliers", "{{supplierRef}}"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Purchases & Invoices",
+      "item": [
+        {
+          "name": "Get Purchases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/purchases?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["purchases"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/invoices?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["invoices"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Stock",
+      "item": [
+        {
+          "name": "Get Stock Levels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/stocklevels?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["stocklevels"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Stocktakes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/stocktakes?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["stocktakes"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Stocktake By UUID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/stocktakes/{{stocktakeUuid}}?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["stocktakes", "{{stocktakeUuid}}"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Events",
+      "item": [
+        {
+          "name": "Get Waste Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/events/wastes?entityId={{entityId}}&branchId={{branchId}}&limit=100&offset=0&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["events", "wastes"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                { "key": "limit", "value": "100" },
+                { "key": "offset", "value": "0" },
+                { "key": "start", "value": "2026-10-01T00:00:00Z", "disabled": true },
+                { "key": "end", "value": "2026-11-12T23:59:59Z", "disabled": true },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Stocktake Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/events/stocktakes?entityId={{entityId}}&branchId={{branchId}}&limit=100&offset=0&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["events", "stocktakes"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                { "key": "limit", "value": "100" },
+                { "key": "offset", "value": "0" },
+                { "key": "start", "value": "2026-10-01T00:00:00Z", "disabled": true },
+                { "key": "end", "value": "2026-11-12T23:59:59Z", "disabled": true },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Transfer Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/events/transfers?entityId={{entityId}}&branchId={{branchId}}&limit=100&offset=0&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["events", "transfers"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                { "key": "limit", "value": "100" },
+                { "key": "offset", "value": "0" },
+                { "key": "start", "value": "2026-10-01T00:00:00Z", "disabled": true },
+                { "key": "end", "value": "2026-11-12T23:59:59Z", "disabled": true },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Sales Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/events/sales?entityId={{entityId}}&branchId={{branchId}}&limit=100&offset=0&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["events", "sales"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                { "key": "limit", "value": "100" },
+                { "key": "offset", "value": "0" },
+                { "key": "start", "value": "2026-10-01T00:00:00Z", "disabled": true },
+                { "key": "end", "value": "2026-11-12T23:59:59Z", "disabled": true },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Receive Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/events/receives?entityId={{entityId}}&branchId={{branchId}}&limit=100&offset=0&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["events", "receives"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                { "key": "limit", "value": "100" },
+                { "key": "offset", "value": "0" },
+                { "key": "start", "value": "2026-10-01T00:00:00Z", "disabled": true },
+                { "key": "end", "value": "2026-11-12T23:59:59Z", "disabled": true },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Post Event (sales / wastes / transfers / receives)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_date\": \"2026-11-12T12:00:00Z\",\n  \"items\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{peckishBasePath}}/events/:eventType?entityId={{entityId}}&branchId={{branchId}}&URL_PARAMETER=URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}",
+              "host": ["{{baseUrl}}{{peckishBasePath}}"],
+              "path": ["events", ":eventType"],
+              "query": [
+                { "key": "entityId", "value": "{{entityId}}" },
+                { "key": "branchId", "value": "{{branchId}}" },
+                {
+                  "key": "URL_PARAMETER",
+                  "value": "URL_PATH={{peckishApiUrl}}:;:USERNAME={{username}}:;:PASSWORD={{password}}:;:CLIENT_ID={{clientId}}:;:CLIENT_SECRET={{clientSecret}}:;:ACCESS_TOKEN={{accessToken}}:;:RESTAURANT_UUID={{restaurantUuid}}"
+                }
+              ],
+              "variable": [
+                { "key": "eventType", "value": "sales" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+
