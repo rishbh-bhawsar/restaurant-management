@@ -42,8 +42,8 @@ Backend/
 ├── utils/
 │   ├── iampeckishRequestHelper.js    # Outbound Axios configuration builder
 │   └── iampeckishTokenStore.js       # In-memory OAuth token and credential storage
-├── .env                              # Local private environment variables (git-ignored)
-├── .example.env                      # Template environment variables (tracked by git)
+├── .env                              # Local private environment variables
+├── .example.env                      # Template environment variables 
 ├── .env.example                      # Standard template environment variables
 ├── .gitignore                        # Git ignore rules
 ├── app.js                            # Express application setup and listener
@@ -67,7 +67,7 @@ Backend/
 ### 1. Clone & Install Dependencies
 
 ```bash
-git clone https://github.com/your-username/restaurant-management.git
+git clone https://github.com/rishbh-bhawsar/restaurant-management
 cd restaurant-management/Backend
 npm install
 ```
@@ -91,7 +91,7 @@ NODE_ENV=development
 IAMPECKISH_CLIENT_ID=your_client_id
 IAMPECKISH_CLIENT_SECRET=your_client_secret
 IAMPECKISH_API_KEY=
-IAMPECKISH_REDIRECT_URI=http://localhost:5000/api/peckish/oauth/callback
+IAMPECKISH_REDIRECT_URI=http://localhost:5000/api/oauth/callback
 
 # MySQL Database
 DB_USER=root
@@ -152,21 +152,21 @@ Expected response:
 
 1. Open the authorization URL in your browser:
    ```text
-   http://localhost:5000/api/peckish/auth/login?client_id=YOUR_CLIENT_ID&redirect_uri=http://localhost:5000/api/peckish/oauth/callback
+   http://localhost:5000/api/auth/login?client_id=YOUR_CLIENT_ID&redirect_uri=http://localhost:5000/api/oauth/callback
    ```
 2. Approve permissions on IAmPeckish.
-3. Peckish redirects back to `/api/peckish/oauth/callback?code=AUTH_CODE`.
+3. Peckish redirects back to `/api/oauth/callback?code=AUTH_CODE`.
 4. The callback automatically exchanges the authorization code for `access_token` + `refresh_token` and displays your session tokens.
-5. Alternatively, exchange the code directly via `POST /api/peckish/auth/token`:
+5. Alternatively, exchange the code directly via `POST /api/auth/token`:
    ```bash
-   curl -X POST http://localhost:5000/api/peckish/auth/token \
+   curl -X POST http://localhost:5000/api/auth/token \
      -H "Content-Type: application/json" \
      -d '{
        "grant_type": "authorization_code",
        "code": "YOUR_CODE",
        "client_id": "YOUR_CLIENT_ID",
        "client_secret": "YOUR_CLIENT_SECRET",
-       "redirect_uri": "http://localhost:5000/api/peckish/oauth/callback"
+       "redirect_uri": "http://localhost:5000/api/oauth/callback"
      }'
    ```
 
@@ -175,7 +175,7 @@ Expected response:
 Data endpoints accept `entityId`, `branchId`, and `URL_PARAMETER` containing credentials:
 
 ```bash
-curl -G "http://localhost:5000/api/peckish/restaurants" \
+curl -G "http://localhost:5000/api/restaurants" \
   --data-urlencode "entityId=1" \
   --data-urlencode "branchId=1" \
   --data-urlencode "URL_PARAMETER=URL_PATH=https://api.iampeckish.com/connect/api/:;:USERNAME=user@example.com:;:PASSWORD=secret:;:CLIENT_ID=client123:;:CLIENT_SECRET=secret123:;:ACCESS_TOKEN=token123:;:RESTAURANT_UUID=rest_uuid"
@@ -243,4 +243,4 @@ Import `postman/RestoFlow_IAmPeckish_API.postman_collection.json` into Postman:
 
 ## 📄 License
 
-ISC License - Developed by **Rishabh Bhawsar**.
+ISC License - Developed by **Rishbh Bhawsar**.
