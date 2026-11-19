@@ -1,0 +1,137 @@
+<div class="cart-panel-inner card border-0 shadow-sm rounded-4 h-100 d-flex flex-column overflow-hidden bg-white">
+  <!-- Cart Header -->
+  <div class="card-header bg-white border-bottom py-3 px-3 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-bag-check-fill text-primary fs-5"></i>
+      <div>
+        <h6 class="mb-0 fw-bold text-dark">Current Order</h6>
+        <span class="text-muted x-small">{{ cartService.itemCount() }} items</span>
+      </div>
+    </div>
+    @if (cartService.items().length > 0) {
+      <button
+        type="button"
+        class="btn btn-sm btn-light text-danger rounded-pill px-2 py-1 x-small"
+        (click)="onClear()"
+        title="Clear Cart"
+      >
+        <i class="bi bi-trash3 me-1"></i> Clear
+      </button>
+    }
+  </div>
+
+  <!-- Order Type selector -->
+  <div class="px-3 pt-2 pb-1 border-bottom bg-light bg-opacity-50">
+    <div class="btn-group w-100 btn-group-sm" role="group">
+      <button
+        type="button"
+        class="btn btn-sm py-1-5 fw-semibold x-small"
+        [class.btn-primary]="orderType === 'Dine-In'"
+        [class.btn-outline-secondary]="orderType !== 'Dine-In'"
+        (click)="orderType = 'Dine-In'"
+      >
+        <i class="bi bi-cup-hot me-1"></i> Dine-In
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm py-1-5 fw-semibold x-small"
+        [class.btn-primary]="orderType === 'Takeaway'"
+        [class.btn-outline-secondary]="orderType !== 'Takeaway'"
+        (click)="orderType = 'Takeaway'"
+      >
+        <i class="bi bi-bag me-1"></i> Takeaway
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm py-1-5 fw-semibold x-small"
+        [class.btn-primary]="orderType === 'Delivery'"
+        [class.btn-outline-secondary]="orderType !== 'Delivery'"
+        (click)="orderType = 'Delivery'"
+      >
+        <i class="bi bi-bicycle me-1"></i> Delivery
+      </button>
+    </div>
+  </div>
+
+  <!-- Cart Items List -->
+  <div class="cart-items-scroll flex-grow-1 p-3 overflow-y-auto">
+    @if (cartService.items().length > 0) {
+      <div class="d-flex flex-column gap-2">
+        @for (item of cartService.items(); track item.id) {
+          <div class="cart-item-row p-2-5 rounded-3 border bg-light bg-opacity-25">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+              <div>
+                <span class="fw-bold text-dark small">{{ item.product.name }}</span>
+                <div class="text-primary fw-semibold x-small">{{ item.unitPrice | appCurrency }} each</div>
+              </div>
+              <span class="fw-bold text-dark small">{{ item.lineTotal | appCurrency }}</span>
+            </div>
+
+            <!-- Modifiers list -->
+            @if (item.selectedModifiers.length > 0) {
+              <div class="d-flex flex-wrap gap-1 my-1">
+                @for (mod of item.selectedModifiers; track mod.optionName) {
+                  <span class="badge bg-white text-secondary border x-small">
+                    {{ mod.optionName }}
+                    @if (mod.priceDelta > 0) {
+                      <span class="text-primary">(+{{ mod.priceDelta | appCurrency }})</span>
+                    }
+                  </span>
+                }
+              </div>
+            }
+
+            @if (item.specialInstructions) {
+              <div class="fst-italic text-muted x-small my-1">
+                <i class="bi bi-chat-left-dots me-1"></i> {{ item.specialInstructions }}
+              </div>
+            }
+
+            <!-- Quantity controls & remove -->
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-1 border-top border-light">
+              <button
+                type="button"
+                class="btn btn-sm btn-link text-danger p-0 text-decoration-none x-small"
+                (click)="onRemove(item.id)"
+              >
+                <i class="bi bi-trash"></i> Remove
+              </button>
+
+              <div class="d-flex align-items-center gap-2">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-white border rounded-circle qty-btn"
+                  (click)="onDecrement(item.id)"
+                >
+                  <i class="bi bi-dash"></i>
+                </button>
+                <span class="fw-bold small px-1">{{ item.quantity }}</span>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-white border rounded-circle qty-btn"
+                  (click)="onIncrement(item.id)"
+                >
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center text-muted p-4">
+        <i class="bi bi-cart3 fs-1 text-black-50 mb-2"></i>
+        <h6 class="fw-bold text-dark mb-1">Cart is Empty</h6>
+        <p class="x-small mb-0">Select dishes from the menu to build the guest order.</p>
+      </div>
+    }
+  </div>
+
+  <!-- Order Summary Footer -->
+  <app-order-summary
+    [pricing]="cartService.pricing()"
+    [itemCount]="cartService.itemCount()"
+    (applyDiscount)="cartService.setDiscountRate($event)"
+    (checkout)="onCheckout()"
+  ></app-order-summary>
+</div>

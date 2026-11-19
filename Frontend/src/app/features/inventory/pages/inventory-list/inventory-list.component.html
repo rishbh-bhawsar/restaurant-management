@@ -1,0 +1,65 @@
+<div class="inventory-list-page animate-fade-in">
+  <app-page-header
+    title="Inventory & Stock Management"
+    subtitle="Live stock counts, reorder alerts, and synchronization with Peckish supply chain"
+    icon="bi-boxes"
+  >
+    <div actions class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1-5 small" (click)="loadInventory(true)">
+        <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i> Refresh Stock
+      </button>
+    </div>
+  </app-page-header>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div class="btn-group rounded-pill p-1 bg-white border shadow-xs" role="group">
+      <button
+        type="button"
+        class="btn btn-sm rounded-pill px-3"
+        [class.btn-primary]="filterStatus === 'all'"
+        [class.btn-light]="filterStatus !== 'all'"
+        (click)="setStatusFilter('all')"
+      >
+        All Items
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm rounded-pill px-3"
+        [class.btn-primary]="filterStatus === 'low stock'"
+        [class.btn-light]="filterStatus !== 'low stock'"
+        (click)="setStatusFilter('low stock')"
+      >
+        Low Stock
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm rounded-pill px-3"
+        [class.btn-primary]="filterStatus === 'out of stock'"
+        [class.btn-light]="filterStatus !== 'out of stock'"
+        (click)="setStatusFilter('out of stock')"
+      >
+        Out of Stock
+      </button>
+    </div>
+
+    <app-search-box
+      placeholder="Search item, ref, category..."
+      [searchTerm]="searchQuery"
+      (search)="onSearch($event)"
+    ></app-search-box>
+  </div>
+
+  <!-- Data Table with Infinite Scroll -->
+  <app-data-table
+    [columns]="columns"
+    [data]="filteredItems"
+    [loading]="loading"
+    [totalRecords]="total"
+    [hasMore]="hasMore"
+    emptyTitle="No Inventory Records Found (404)"
+    emptyDescription="No inventory items found matching your filters. Try checking other stock categories."
+    (scrollEnd)="onScrollEnd()"
+    (refresh)="loadInventory(true)"
+  ></app-data-table>
+</div>

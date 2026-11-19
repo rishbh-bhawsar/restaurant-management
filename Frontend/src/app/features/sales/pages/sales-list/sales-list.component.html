@@ -1,0 +1,99 @@
+<div class="sales-list-page animate-fade-in">
+  <app-page-header
+    title="Sales & Transactions Log"
+    subtitle="Audit log of completed POS transactions and bidirectional Peckish sales events"
+    icon="bi-receipt"
+  >
+    <div actions class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1-5 small" (click)="loadSales(true)">
+        <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i> Refresh Sales
+      </button>
+      <a routerLink="/pos/terminal" class="btn btn-primary-gradient rounded-pill px-3 py-1-5 small shadow-sm">
+        <i class="bi bi-cart-plus me-1"></i> New Sale
+      </a>
+    </div>
+  </app-page-header>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill small">
+        <i class="bi bi-funnel me-1"></i> Total Orders: {{ total }}
+      </span>
+    </div>
+
+    <app-search-box
+      placeholder="Search order #, customer, method..."
+      [searchTerm]="searchQuery"
+      (search)="onSearch($event)"
+    ></app-search-box>
+  </div>
+
+  <!-- Data Table with Infinite Scroll -->
+  <app-data-table
+    [columns]="columns"
+    [data]="filteredSales"
+    [loading]="loading"
+    [totalRecords]="total"
+    [hasMore]="hasMore"
+    emptyTitle="No Sales Records Found (404)"
+    emptyDescription="No sales transactions found in the database. Complete a sale in the POS terminal to populate data."
+    (scrollEnd)="onScrollEnd()"
+    (rowClick)="onRowClick($event)"
+    (refresh)="loadSales(true)"
+  ></app-data-table>
+
+  <!-- Receipt / Sale Details Modal -->
+  @if (isReceiptModalOpen && selectedSale) {
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold text-dark">Transaction: {{ selectedSale.order_number }}</h5>
+            <button type="button" class="btn-close" (click)="closeModal()"></button>
+          </div>
+          <div class="modal-body py-4">
+            <div class="row g-3">
+              <div class="col-6">
+                <span class="text-muted x-small text-uppercase">Guest Name</span>
+                <div class="fw-bold text-dark">{{ selectedSale.customer_name }}</div>
+              </div>
+              <div class="col-6">
+                <span class="text-muted x-small text-uppercase">Payment Method</span>
+                <div>
+                  <span class="badge" [ngClass]="getPaymentBadgeClass(selectedSale.payment_method)">{{ selectedSale.payment_method }}</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <span class="text-muted x-small text-uppercase">Items Count</span>
+                <div class="text-dark">{{ selectedSale.items_count }} items</div>
+              </div>
+              <div class="col-6">
+                <span class="text-muted x-small text-uppercase">Subtotal</span>
+                <div class="text-dark">{{ selectedSale.subtotal | appCurrency }}</div>
+              </div>
+              <div class="col-6">
+                <span class="text-muted x-small text-uppercase">Tax</span>
+                <div class="text-dark">{{ selectedSale.tax_amount | appCurrency }}</div>
+              </div>
+              <div class="col-6">
+                <span class="text-muted x-small text-uppercase">Total Settled</span>
+                <div class="fw-bold text-primary fs-5">{{ selectedSale.total_amount | appCurrency }}</div>
+              </div>
+              <div class="col-12">
+                <span class="text-muted x-small text-uppercase">Transaction Date</span>
+                <div class="text-dark small">{{ selectedSale.created_at | date: 'full' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light rounded-pill px-4" (click)="closeModal()">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

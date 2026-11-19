@@ -1,0 +1,48 @@
+<div class="row g-3 g-xl-4">
+  <div class="col-12 col-sm-6 col-xl-3">
+    <app-stat-card
+      label="Today's Revenue"
+      [value]="stats.todaySales | appCurrency"
+      [trend]="stats.salesGrowth"
+      [trendPositive]="true"
+      subtext="vs. yesterday ($4,240)"
+      icon="bi-currency-dollar"
+      iconBg="#ecfdf5"
+      iconColor="#10b981"
+    ></app-stat-card>
+  </div>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <app-stat-card
+      label="Orders Processed"
+      [value]="stats.totalOrders"
+      [trend]="stats.orderGrowth"
+      [trendPositive]="true"
+      subtext="Across all terminal counters"
+      icon="bi-receipt-cutoff"
+      iconBg="#eef2ff"
+      iconColor="#4f46e5"
+    ></app-stat-card>
+  </div>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <app-stat-card
+      label="Active Menu Items"
+      [value]="stats.activeItems"
+      subtext="Ready for POS ordering"
+      icon="bi-menu-button-wide-fill"
+      iconBg="#f0fdf4"
+      iconColor="#16a34a"
+    ></app-stat-card>
+  </div>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <app-stat-card
+      label="Low Stock Warning"
+      [value]="stats.lowStockCount"
+      [trend]="'Immediate Action'"
+      [trendPositive]="false"
+      subtext="Items below reorder point"
+      icon="bi-exclamation-triangle"
+      iconBg="#fff1f2"
+      iconColor="#e11d48"
+    ></app-stat-card>
+  </div>
+</div>

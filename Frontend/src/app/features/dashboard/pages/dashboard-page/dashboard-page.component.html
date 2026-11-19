@@ -1,0 +1,65 @@
+<div class="dashboard-page animate-fade-in">
+  <app-page-header
+    title="Restaurant Operations Dashboard"
+    subtitle="Real-time POS revenue, live inventory tracking & branch performance"
+    icon="bi-speedometer2"
+  >
+    <div actions class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1-5 small" (click)="loadData()">
+        <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i> Refresh
+      </button>
+      <button type="button" class="btn btn-primary-gradient rounded-pill px-4 py-1-5 small shadow-sm" (click)="goToPos()">
+        <i class="bi bi-grid-3x3-gap-fill me-1"></i> Open POS Terminal
+      </button>
+    </div>
+  </app-page-header>
+
+  <!-- Metric Overview Cards -->
+  <div class="mb-4">
+    <app-stats-overview [stats]="stats"></app-stats-overview>
+  </div>
+
+  <!-- Operational Quick Action Cards -->
+  <div class="row g-3 g-xl-4 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 quick-nav-card bg-primary text-white position-relative overflow-hidden cursor-pointer" (click)="goToPos()">
+        <div class="position-relative z-1">
+          <div class="badge bg-white text-primary fw-bold mb-2">Instant Order</div>
+          <h5 class="fw-bold mb-1">Point of Sale (POS)</h5>
+          <p class="small text-white-50 mb-0">Fast touch order booking, modifiers & invoice print</p>
+        </div>
+        <i class="bi bi-calculator position-absolute end-0 bottom-0 text-white-50 fs-1 me-3 mb-2" style="font-size: 4rem !important; opacity: 0.2;"></i>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 quick-nav-card bg-dark text-white position-relative overflow-hidden cursor-pointer" routerLink="/products">
+        <div class="position-relative z-1">
+          <div class="badge bg-warning text-dark fw-bold mb-2">Catalog Sync</div>
+          <h5 class="fw-bold mb-1">Menu & Items</h5>
+          <p class="small text-white-50 mb-0">Synchronize products, recipes & ingredients with Peckish</p>
+        </div>
+        <i class="bi bi-box-seam position-absolute end-0 bottom-0 text-white-50 fs-1 me-3 mb-2" style="font-size: 4rem !important; opacity: 0.2;"></i>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 quick-nav-card bg-white border position-relative overflow-hidden cursor-pointer" routerLink="/inventory">
+        <div class="position-relative z-1">
+          <div class="badge bg-danger-subtle text-danger fw-bold mb-2">Stock Control</div>
+          <h5 class="fw-bold text-dark mb-1">Stocktakes & Wastage</h5>
+          <p class="small text-muted mb-0">Record physical stocktakes, wastage and receiving events</p>
+        </div>
+        <i class="bi bi-clipboard2-check position-absolute end-0 bottom-0 text-secondary fs-1 me-3 mb-2" style="font-size: 4rem !important; opacity: 0.15;"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dual Tables: Recent Transactions & Low Stock Alerts -->
+  <div class="row g-3 g-xl-4">
+    <div class="col-12 col-xl-7">
+      <app-recent-orders [orders]="recentOrders"></app-recent-orders>
+    </div>
+    <div class="col-12 col-xl-5">
+      <app-low-stock-alert [items]="lowStockItems"></app-low-stock-alert>
+    </div>
+  </div>
+</div>

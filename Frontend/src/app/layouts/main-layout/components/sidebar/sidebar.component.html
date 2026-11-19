@@ -1,0 +1,78 @@
+<aside class="sidebar-wrapper d-flex flex-column bg-white border-end h-100" [class.collapsed]="isCollapsed">
+  <!-- Brand logo -->
+  <div class="brand-header d-flex align-items-center justify-content-between px-4 border-bottom">
+    <a routerLink="/dashboard" class="d-flex align-items-center text-decoration-none gap-2 brand-link">
+      <div class="brand-icon rounded-3 d-flex align-items-center justify-content-center text-white">
+        <i class="bi bi-fire fs-5"></i>
+      </div>
+      @if (!isCollapsed) {
+        <div>
+          <span class="fs-5 fw-bold text-dark tracking-wide">Resto<span class="text-primary">Flow</span></span>
+          <span class="badge bg-secondary-subtle text-secondary ms-1 x-small">POS</span>
+        </div>
+      }
+    </a>
+  </div>
+
+  <!-- Navigation items -->
+  <div class="sidebar-nav flex-grow-1 py-3 px-3 overflow-y-auto">
+    <div class="nav-section-title px-3 mb-2 text-uppercase text-muted fw-bold x-small" [class.d-none]="isCollapsed">
+      Main Menu
+    </div>
+    <ul class="nav flex-column gap-1">
+      @for (item of navItems; track item.route) {
+        <li class="nav-item">
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            (click)="onNavClick()"
+            class="nav-link d-flex align-items-center rounded-3 px-3 py-2-5 text-secondary"
+            [title]="item.label"
+          >
+            <i class="bi fs-5 lh-1 me-3 nav-icon" [ngClass]="item.icon"></i>
+            @if (!isCollapsed) {
+              <span class="nav-label fw-medium">{{ item.label }}</span>
+              @if (item.badge) {
+                <span class="badge bg-success-subtle text-success ms-auto small rounded-pill">{{ item.badge }}</span>
+              }
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+
+  <!-- Footer profile & quick logout -->
+  <div class="sidebar-footer p-3 border-top bg-light bg-opacity-50">
+    @if (!isCollapsed) {
+      <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-white border">
+        <div class="d-flex align-items-center gap-2 overflow-hidden">
+          <div class="avatar-sm rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold">
+            A
+          </div>
+          <div class="overflow-hidden">
+            <div class="fw-bold text-truncate small text-dark">admin&#64;test.com</div>
+            <div class="x-small text-muted">Admin Mode</div>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-sm btn-light text-danger rounded-circle p-1"
+          (click)="logout()"
+          title="Sign out"
+        >
+          <i class="bi bi-box-arrow-right fs-6"></i>
+        </button>
+      </div>
+    } @else {
+      <button
+        type="button"
+        class="btn btn-sm btn-light text-danger w-100 rounded-3 py-2"
+        (click)="logout()"
+        title="Sign out"
+      >
+        <i class="bi bi-box-arrow-right fs-5"></i>
+      </button>
+    }
+  </div>
+</aside>

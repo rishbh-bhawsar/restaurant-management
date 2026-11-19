@@ -1,0 +1,21 @@
+.empty-state {
+  animation: fadeIn 0.3s ease;
+}
+
+.icon-bubble {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: all 0.2s ease;
+
+  &.is-404 {
+    background: #fef2f2;
+    color: #ef4444;
+  }
+}

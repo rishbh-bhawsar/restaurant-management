@@ -1,0 +1,49 @@
+<div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+  <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-clock-history text-primary"></i>
+      <h6 class="mb-0 fw-bold text-dark">Recent Transactions</h6>
+    </div>
+    <a routerLink="/sales" class="btn btn-sm btn-light rounded-pill px-3 text-primary text-decoration-none small">
+      View All
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-custom mb-0">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th>Amount</th>
+          <th>Method</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ord of orders; track ord.id) {
+          <tr>
+            <td class="fw-bold text-dark">{{ ord.orderNumber }}</td>
+            <td>{{ ord.customerName }}</td>
+            <td><span class="badge bg-light text-secondary">{{ ord.itemsCount }} items</span></td>
+            <td class="fw-bold text-dark">{{ ord.totalAmount | appCurrency }}</td>
+            <td>
+              <span class="badge bg-light text-dark border">
+                <i class="bi me-1" [ngClass]="ord.paymentMethod === 'Card' ? 'bi-credit-card' : ord.paymentMethod === 'Cash' ? 'bi-cash' : 'bi-phone'"></i>
+                {{ ord.paymentMethod }}
+              </span>
+            </td>
+            <td>
+              <span class="badge-soft-success">{{ ord.status }}</span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="text-center py-4 text-muted">No recent orders found</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

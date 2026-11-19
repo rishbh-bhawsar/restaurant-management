@@ -1,0 +1,48 @@
+<div class="pos-terminal-layout animate-fade-in">
+  <!-- Top Bar with Search & Category navigation -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+    <div class="flex-grow-1 overflow-hidden">
+      <app-category-list
+        [categories]="categories"
+        [selectedCategoryId]="selectedCategoryId"
+        (categorySelected)="onCategorySelect($event)"
+      ></app-category-list>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <app-search-box
+        placeholder="Search dish, SKU, category..."
+        [searchTerm]="searchQuery"
+        (search)="onSearch($event)"
+      ></app-search-box>
+    </div>
+  </div>
+
+  <!-- Dual Layout: Catalog Grid on Left, Cart Panel on Right -->
+  <div class="row g-3">
+    <!-- Products Catalog Column -->
+    <div class="col-12 col-lg-8 col-xl-8 col-xxl-9">
+      <div class="catalog-scroll-panel">
+        <app-product-grid
+          [products]="filteredProducts"
+          [loading]="loading"
+          (quickAdd)="onQuickAdd($event)"
+          (customize)="openCustomization($event)"
+          (resetSearch)="resetFilters()"
+        ></app-product-grid>
+      </div>
+    </div>
+
+    <!-- Live Cart Column -->
+    <div class="col-12 col-lg-4 col-xl-4 col-xxl-3">
+      <app-cart-panel (proceedToCheckout)="goToCheckout()"></app-cart-panel>
+    </div>
+  </div>
+
+  <!-- Product Customization Dialog -->
+  <app-product-customization
+    [product]="selectedProductForCustomization"
+    [isOpen]="isCustomizationOpen"
+    (close)="closeCustomization()"
+    (addConfigured)="onAddConfigured($event)"
+  ></app-product-customization>
+</div>

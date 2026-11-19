@@ -1,0 +1,21 @@
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.brand-logo-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: var(--primary-gradient);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+.x-small {
+  font-size: 0.75rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

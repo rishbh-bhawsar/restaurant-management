@@ -1,0 +1,79 @@
+<div class="restaurant-list-page animate-fade-in">
+  <app-page-header
+    title="Multi-Location & Restaurant Entities"
+    subtitle="Manage entity IDs, branch routing, and active Peckish integration endpoints"
+    icon="bi-buildings"
+  >
+    <div actions class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1-5 small" (click)="loadRestaurants()">
+        <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i> Refresh Locations
+      </button>
+    </div>
+  </app-page-header>
+
+  <div class="row g-4">
+    @for (rest of restaurants; track rest.restaurant_uuid) {
+      <div class="col-12 col-md-6 col-xl-4">
+        <div
+          class="card border-0 shadow-sm rounded-4 h-100 restaurant-card p-4 bg-white position-relative overflow-hidden"
+          [class.is-active-branch]="rest.restaurant_uuid === contextService.currentContext().restaurantUuid"
+        >
+          @if (rest.restaurant_uuid === contextService.currentContext().restaurantUuid) {
+            <div class="active-ribbon position-absolute top-0 end-0 bg-primary text-white py-1 px-3 rounded-bottom-start small fw-bold">
+              <i class="bi bi-check-circle-fill me-1"></i> Active Branch
+            </div>
+          }
+
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="branch-icon-box rounded-3 d-flex align-items-center justify-content-center text-primary fs-4">
+              <i class="bi bi-shop"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold text-dark mb-0">{{ rest.name }}</h5>
+              <div class="text-muted x-small"><code>UUID: {{ rest.restaurant_uuid }}</code></div>
+            </div>
+          </div>
+
+          <div class="border-top pt-3 mb-3 small">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Entity ID:</span>
+              <span class="fw-semibold text-dark">{{ rest.entity_id }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Branch ID:</span>
+              <span class="fw-semibold text-dark">{{ rest.branch_id }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Address:</span>
+              <span class="text-dark">{{ rest.address }}, {{ rest.city }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Telephone:</span>
+              <span class="text-dark">{{ rest.phone }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Active Terminals:</span>
+              <span class="badge bg-light text-dark border">{{ rest.terminals_count }} Pos Lanes</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-top mt-auto">
+            @if (rest.restaurant_uuid === contextService.currentContext().restaurantUuid) {
+              <button type="button" class="btn btn-light w-100 rounded-pill py-2 text-primary fw-bold disabled">
+                <i class="bi bi-check2-all me-1"></i> Currently Selected
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-outline-primary w-100 rounded-pill py-2 fw-semibold"
+                (click)="setActiveBranch(rest)"
+              >
+                Switch to this Location
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

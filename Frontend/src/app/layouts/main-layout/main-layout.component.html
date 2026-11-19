@@ -1,0 +1,22 @@
+<div class="main-layout-root d-flex min-vh-100 position-relative">
+  <!-- Toast notification host -->
+  <app-toaster></app-toaster>
+
+  <!-- Mobile backdrop -->
+  @if (isMobileOpen) {
+    <div class="mobile-sidebar-backdrop position-fixed top-0 start-0 w-100 h-100" (click)="closeMobileSidebar()"></div>
+  }
+
+  <!-- Sidebar -->
+  <div class="sidebar-container" [class.mobile-open]="isMobileOpen">
+    <app-sidebar [isCollapsed]="isSidebarCollapsed" (closeMobileSidebar)="closeMobileSidebar()"></app-sidebar>
+  </div>
+
+  <!-- Main view wrapper -->
+  <div class="main-content-wrapper flex-grow-1 d-flex flex-column min-vh-100 overflow-x-hidden">
+    <app-header (toggleSidebar)="toggleSidebar()"></app-header>
+    <main class="flex-grow-1 p-3 p-lg-4 bg-light">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

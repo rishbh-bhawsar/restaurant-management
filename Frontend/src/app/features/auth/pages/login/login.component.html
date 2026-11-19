@@ -1,0 +1,83 @@
+<div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 login-card">
+  <!-- Brand logo -->
+  <div class="text-center mb-4">
+    <div class="brand-logo-circle mx-auto mb-3 d-flex align-items-center justify-content-center text-white">
+      <i class="bi bi-fire fs-2"></i>
+    </div>
+    <h3 class="fw-bold text-dark mb-1">Welcome to RestoFlow</h3>
+    <p class="text-muted small">Restaurant POS & Peckish Connect Hub</p>
+  </div>
+
+  <!-- Demo Credential Callout -->
+  <!-- <div class="alert alert-primary bg-primary-subtle border-0 rounded-3 p-3 mb-4 d-flex align-items-start gap-2">
+    <i class="bi bi-shield-lock-fill text-primary fs-5 lh-1 mt-1"></i>
+    <div class="flex-grow-1">
+      <div class="fw-bold text-primary small">Default Admin Credentials</div>
+      <div class="x-small text-secondary">
+        Email: <code>admin&#64;test.com</code> | Password: <code>admin123</code>
+      </div>
+    </div>
+    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1 x-small" (click)="fillDemoAdmin()">
+      Fill
+    </button>
+  </div> -->
+
+  <!-- Form -->
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label class="form-label small fw-semibold text-secondary">Email Address</label>
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted">
+          <i class="bi bi-envelope"></i>
+        </span>
+        <input type="email" formControlName="email" class="form-control bg-light border-start-0 rounded-end-3 py-2"
+          placeholder="admin@test.com"
+          [class.is-invalid]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid" />
+      </div>
+      @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
+      <div class="text-danger x-small mt-1">Please enter a valid email address.</div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <label class="form-label small fw-semibold text-secondary">Password</label>
+      </div>
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted">
+          <i class="bi bi-key"></i>
+        </span>
+        <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+          class="form-control bg-light border-start-0 border-end-0 py-2" placeholder="••••••••"
+          [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" />
+        <button type="button" class="input-group-text bg-light border-start-0 rounded-end-3 text-muted cursor-pointer"
+          (click)="togglePassword()">
+          <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+        </button>
+      </div>
+      @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
+      <div class="text-danger x-small mt-1">Password must be at least 4 characters.</div>
+      }
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="rememberMe" formControlName="rememberMe" />
+        <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
+      </div>
+      <!-- <span class="x-small text-muted">Protected API Session</span> -->
+    </div>
+
+    <button type="submit"
+      class="btn btn-primary-gradient w-100 rounded-3 py-2-5 d-flex align-items-center justify-content-center gap-2"
+      [disabled]="loading">
+      @if (loading) {
+      <div class="spinner-border spinner-border-sm text-white" role="status"></div>
+      <span>Authenticating...</span>
+      } @else {
+      <span>Sign In</span>
+      <i class="bi bi-arrow-right"></i>
+      }
+    </button>
+  </form>
+</div>

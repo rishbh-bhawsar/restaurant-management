@@ -1,0 +1,79 @@
+@if (isOpen && product) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <!-- Header with product preview -->
+        <div class="modal-header border-0 pb-0 position-relative">
+          <div class="d-flex align-items-center gap-3">
+            <img [src]="product.image" [alt]="product.name" class="rounded-3 object-fit-cover modal-preview-img" />
+            <div>
+              <h5 class="fw-bold mb-1 text-dark">{{ product.name }}</h5>
+              <div class="text-primary fw-bold">{{ product.price | appCurrency }} <span class="text-muted small fw-normal">base price</span></div>
+            </div>
+          </div>
+          <button type="button" class="btn-close" (click)="close.emit()"></button>
+        </div>
+
+        <div class="modal-body py-4">
+          @if (product.customizationGroups && product.customizationGroups.length > 0) {
+            @for (grp of product.customizationGroups; track grp.id) {
+              <div class="mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-dark small text-uppercase letter-spacing">{{ grp.name }}</span>
+                  @if (grp.required) {
+                    <span class="badge bg-danger-subtle text-danger x-small">Required</span>
+                  } @else {
+                    <span class="badge bg-light text-muted x-small">Optional</span>
+                  }
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                  @for (opt of grp.options; track opt.name) {
+                    <button
+                      type="button"
+                      class="btn btn-sm rounded-pill px-3 py-2 option-btn"
+                      [class.active-option]="isOptionSelected(grp.name, opt.name)"
+                      (click)="toggleOption(grp.name, opt, grp.required)"
+                    >
+                      <span>{{ opt.name }}</span>
+                      @if (opt.priceDelta > 0) {
+                        <span class="ms-1 fw-bold text-primary">+{{ opt.priceDelta | appCurrency }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Special instructions -->
+          <div>
+            <label class="form-label small fw-bold text-dark text-uppercase letter-spacing mb-1">Kitchen Notes & Allergies</label>
+            <textarea
+              class="form-control rounded-3 bg-light border-0 small"
+              rows="2"
+              placeholder="e.g. Extra napkins, dressing on the side, no onions..."
+              [(ngModel)]="specialInstructions"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Footer with total and add button -->
+        <div class="modal-footer border-top bg-light d-flex align-items-center justify-content-between py-3 px-4">
+          <div>
+            <span class="text-muted x-small d-block">Unit Total</span>
+            <span class="fw-bold fs-5 text-dark">{{ calculatedTotal | appCurrency }}</span>
+          </div>
+          <button
+            type="button"
+            class="btn btn-primary-gradient rounded-pill px-4 py-2 fw-semibold"
+            (click)="confirm()"
+          >
+            <i class="bi bi-cart-plus me-1"></i> Add to Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,33 @@
+.main-layout-root {
+  background-color: #f8fafc;
+}
+
+.sidebar-container {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+  transition: transform 0.25s ease;
+
+  @media (max-width: 991.98px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
+}
+
+.mobile-sidebar-backdrop {
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 1030;
+}
+
+.main-content-wrapper {
+  min-width: 0;
+}

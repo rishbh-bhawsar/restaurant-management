@@ -1,0 +1,32 @@
+.auth-layout-root {
+  background: radial-gradient(circle at 10% 20%, #f0f4ff 0%, #eef2ff 50%, #f8fafc 100%);
+  overflow: hidden;
+}
+
+.auth-ambient-blur {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.6;
+  pointer-events: none;
+
+  &.ambient-1 {
+    width: 380px;
+    height: 380px;
+    background: #c7d2fe;
+    top: -50px;
+    left: -50px;
+  }
+
+  &.ambient-2 {
+    width: 320px;
+    height: 320px;
+    background: #fed7aa;
+    bottom: -50px;
+    right: -50px;
+  }
+}
+
+.auth-card-container {
+  max-width: 460px;
+}

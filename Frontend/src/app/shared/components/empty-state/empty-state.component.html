@@ -1,0 +1,14 @@
+<div class="empty-state text-center py-5 px-3">
+  <div class="icon-bubble mx-auto mb-3" [class.is-404]="is404">
+    <i class="bi" [ngClass]="icon"></i>
+  </div>
+  <h5 class="fw-bold text-dark mb-2">{{ title }}</h5>
+  <p class="text-muted small mb-4 mx-auto" style="max-width: 420px;">
+    {{ description }}
+  </p>
+  @if (showAction) {
+    <button type="button" class="btn btn-outline-primary btn-sm px-4 rounded-pill" (click)="onActionClick()">
+      <i class="bi bi-arrow-counterclockwise me-1"></i> {{ actionText }}
+    </button>
+  }
+</div>

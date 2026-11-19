@@ -1,0 +1,15 @@
+<div class="category-scroll-wrapper py-1 d-flex align-items-center gap-2 overflow-x-auto">
+  @for (cat of categories; track cat.id) {
+    <button
+      type="button"
+      class="btn rounded-pill px-3 py-2 d-flex align-items-center gap-2 category-pill shadow-xs"
+      [class.active-cat]="cat.id === selectedCategoryId"
+      (click)="select(cat.id)"
+    >
+      @if (cat.icon) {
+        <i class="bi" [ngClass]="cat.icon"></i>
+      }
+      <span class="small fw-semibold text-nowrap">{{ cat.name }}</span>
+    </button>
+  }
+</div>

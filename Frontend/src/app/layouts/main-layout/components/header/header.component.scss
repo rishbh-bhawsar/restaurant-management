@@ -1,0 +1,45 @@
+.app-header {
+  height: var(--header-height);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.x-small {
+  font-size: 0.72rem;
+}
+
+.py-1-5 {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  display: inline-block;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  font-size: 0.95rem;
+}
+
+.branch-menu, .user-menu {
+  min-width: 250px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.active-branch {
+  background-color: #eef2ff !important;
+  color: #4f46e5;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

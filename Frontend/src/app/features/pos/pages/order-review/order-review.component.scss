@@ -1,0 +1,44 @@
+.receipt-card {
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid #eef2f6 !important;
+}
+
+.paid-stamp {
+  border: 3px solid #10b981;
+  color: #10b981;
+  font-weight: 900;
+  font-size: 1.1rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 8px;
+  transform: rotate(-12deg);
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+}
+
+.receipt-barcode {
+  letter-spacing: 0.25em;
+  font-family: monospace;
+  font-size: 1.2rem;
+  color: #334155;
+}
+
+.x-small {
+  font-size: 0.72rem;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .receipt-card {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+  }
+}

@@ -1,0 +1,108 @@
+<header class="app-header d-flex align-items-center justify-content-between px-3 px-lg-4 bg-white border-bottom">
+  <div class="d-flex align-items-center">
+    <button
+      type="button"
+      class="btn btn-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center sidebar-toggle-btn"
+      (click)="toggleSidebar.emit()"
+      aria-label="Toggle Sidebar"
+    >
+      <i class="bi bi-list fs-5"></i>
+    </button>
+    <app-breadcrumb class="d-none d-md-block"></app-breadcrumb>
+  </div>
+
+  <div class="d-flex align-items-center gap-3">
+    <!-- Active Restaurant Context Selector -->
+    <div class="dropdown position-relative">
+      <button
+        type="button"
+        class="btn btn-outline-light text-dark border d-flex align-items-center gap-2 rounded-pill px-3 py-1-5 shadow-sm branch-badge"
+        (click)="isBranchMenuOpen = !isBranchMenuOpen; isUserMenuOpen = false"
+      >
+        <span class="pulse-indicator"></span>
+        <i class="bi bi-shop text-primary"></i>
+        <span class="small fw-semibold d-none d-sm-inline">{{ contextService.currentContext().restaurantName }}</span>
+        <i class="bi bi-chevron-down text-muted small ms-1"></i>
+      </button>
+
+      @if (isBranchMenuOpen) {
+        <div class="dropdown-menu show shadow-lg border-0 rounded-4 p-2 mt-2 end-0 branch-menu">
+          <div class="px-3 py-2 border-bottom mb-1">
+            <span class="text-uppercase text-muted fw-bold x-small">Select Restaurant Branch</span>
+          </div>
+          @for (b of branches; track b.uuid) {
+            <button
+              type="button"
+              class="dropdown-item rounded-3 py-2 d-flex align-items-center justify-content-between"
+              [class.active-branch]="b.uuid === contextService.currentContext().restaurantUuid"
+              (click)="switchBranch(b)"
+            >
+              <div>
+                <div class="fw-semibold small">{{ b.name }}</div>
+                <div class="text-muted x-small">Entity: {{ b.entityId }} | Branch: {{ b.branchId }}</div>
+              </div>
+              @if (b.uuid === contextService.currentContext().restaurantUuid) {
+                <i class="bi bi-check2 text-primary fs-5 ms-2"></i>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Quick POS Button -->
+    <button
+      type="button"
+      class="btn btn-primary-gradient rounded-pill px-3 py-1-5 d-flex align-items-center gap-2 small shadow-sm"
+      (click)="navigateToPos()"
+    >
+      <i class="bi bi-grid-3x3-gap-fill"></i>
+      <span class="d-none d-md-inline">POS Terminal</span>
+    </button>
+
+    <!-- User Profile Dropdown -->
+    <div class="dropdown position-relative">
+      <div
+        class="user-profile-trigger d-flex align-items-center gap-2 cursor-pointer p-1 rounded-pill"
+        (click)="isUserMenuOpen = !isUserMenuOpen; isBranchMenuOpen = false"
+      >
+        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold">
+          A
+        </div>
+        <div class="d-none d-xl-block text-start me-1">
+          <div class="small fw-bold text-dark lh-sm">
+            {{ authService.currentUser()?.name || 'Administrator' }}
+          </div>
+          <div class="x-small text-muted">{{ authService.currentUser()?.email || 'admin@test.com' }}</div>
+        </div>
+        <i class="bi bi-chevron-down text-muted small d-none d-sm-inline"></i>
+      </div>
+
+      @if (isUserMenuOpen) {
+        <div class="dropdown-menu show shadow-lg border-0 rounded-4 p-2 mt-2 end-0 user-menu">
+          <div class="px-3 py-2 border-bottom mb-2">
+            <div class="fw-bold text-dark">{{ authService.currentUser()?.name || 'Admin User' }}</div>
+            <div class="text-muted small">{{ authService.currentUser()?.email || 'admin@test.com' }}</div>
+            <span class="badge bg-primary-subtle text-primary mt-1">Full System Access</span>
+          </div>
+
+          <a routerLink="/dashboard" class="dropdown-item rounded-3 py-2 small" (click)="isUserMenuOpen = false">
+            <i class="bi bi-speedometer2 me-2 text-primary"></i> Dashboard
+          </a>
+          <a routerLink="/pos/terminal" class="dropdown-item rounded-3 py-2 small" (click)="isUserMenuOpen = false">
+            <i class="bi bi-calculator me-2 text-success"></i> POS Checkout
+          </a>
+          <a routerLink="/restaurants" class="dropdown-item rounded-3 py-2 small" (click)="isUserMenuOpen = false">
+            <i class="bi bi-gear me-2 text-secondary"></i> Restaurant Settings
+          </a>
+
+          <div class="dropdown-divider my-2"></div>
+
+          <button type="button" class="dropdown-item rounded-3 py-2 text-danger small" (click)="logout()">
+            <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>

@@ -1,0 +1,40 @@
+.restaurant-card {
+  border: 1px solid #eef2f6 !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  &.is-active-branch {
+    border-color: #4f46e5 !important;
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.12) !important;
+  }
+}
+
+.branch-icon-box {
+  width: 48px;
+  height: 48px;
+  background: #eef2ff;
+}
+
+.active-ribbon {
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.x-small {
+  font-size: 0.72rem;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

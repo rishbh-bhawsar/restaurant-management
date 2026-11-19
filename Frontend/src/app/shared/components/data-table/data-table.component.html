@@ -1,0 +1,83 @@
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+  <div
+    class="table-responsive table-scroll-container"
+    appInfiniteScroll
+    [scrollDisabled]="loading || !hasMore"
+    (scrolled)="onScroll()"
+  >
+    <table class="table table-hover table-custom mb-0">
+      <thead>
+        <tr>
+          @for (col of columns; track col.key) {
+            <th>{{ col.label }}</th>
+          }
+          <th class="text-end pe-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (data && data.length > 0) {
+          @for (row of data; track $index) {
+            <tr (click)="onRowClick(row)" class="cursor-pointer">
+              @for (col of columns; track col.key) {
+                <td>
+                  @if (col.type === 'currency') {
+                    <span class="fw-semibold">{{ row[col.key] | appCurrency }}</span>
+                  } @else if (col.type === 'badge') {
+                    <span
+                      class="badge"
+                      [ngClass]="col.badgeClass ? col.badgeClass(row[col.key]) : 'bg-primary-subtle text-primary'"
+                    >
+                      {{ row[col.key] }}
+                    </span>
+                  } @else if (col.type === 'date') {
+                    <span class="text-secondary small">{{ row[col.key] | date: 'short' }}</span>
+                  } @else {
+                    <span>{{ row[col.key] || '—' }}</span>
+                  }
+                </td>
+              }
+              <td class="text-end pe-4">
+                <ng-container
+                  [ngTemplateOutlet]="actionsTemplate"
+                  [ngTemplateOutletContext]="{ $implicit: row }"
+                ></ng-container>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-4 bg-light bg-opacity-50">
+      <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+      <span class="text-muted small">Loading records...</span>
+    </div>
+  }
+
+  @if (!loading && (!data || data.length === 0)) {
+    <app-empty-state
+      [title]="emptyTitle"
+      [description]="emptyDescription"
+      [is404]="true"
+      icon="bi-inbox"
+      actionText="Reload Data"
+      (action)="refresh.emit()"
+    ></app-empty-state>
+  }
+
+  @if (hasMore && !loading) {
+    <div class="text-center py-3 border-top bg-light">
+      <button type="button" class="btn btn-sm btn-link text-primary text-decoration-none" (click)="onScroll()">
+        <i class="bi bi-chevron-double-down me-1"></i> Scroll to load more records
+      </button>
+    </div>
+  }
+</div>
+
+<ng-template #actionsTemplate let-row>
+  <button type="button" class="btn btn-sm btn-light rounded-pill px-3" (click)="$event.stopPropagation(); onRowClick(row)">
+    <i class="bi bi-eye text-primary"></i> View
+  </button>
+</ng-template>
