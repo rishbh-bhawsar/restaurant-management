@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Helper to construct Axios request configuration forwarding query params and headers
  * 
  * @param {Object} [params] - Query parameters
@@ -43,9 +43,9 @@ export function buildPeckishRequestConfig(params = {}, reqHeaders = {}, creds = 
     const headersObj = typeof reqHeaders === "string" ? { authorization: reqHeaders } : (reqHeaders || {});
 
     const authHeader =
+        creds.ACCESS_TOKEN ||
         headersObj.authorization ||
         headersObj.Authorization ||
-        creds.ACCESS_TOKEN ||
         creds.TOKEN;
 
     if (authHeader) {
@@ -53,23 +53,27 @@ export function buildPeckishRequestConfig(params = {}, reqHeaders = {}, creds = 
     }
 
     const restUuid =
+        creds.RESTAURANT_UUID ||
         headersObj["restaurant-uuid"] ||
         headersObj["x-restaurant-uuid"] ||
         params["restaurant_uuid"] ||
-        params["restaurant-uuid"] ||
-        creds.RESTAURANT_UUID;
+        params["restaurant-uuid"];
 
     if (restUuid) {
         config.headers["restaurant-uuid"] = restUuid;
     }
 
-    const clientId = creds.CLIENT_ID || creds.clientId || headersObj["x-client-id"] || headersObj["client-id"];
+    const DEFAULT_CLIENT_ID = process.env.IAMPECKISH_CLIENT_ID;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const rawClientId = creds.CLIENT_ID || creds.clientId || headersObj["x-client-id"] || headersObj["client-id"] || process.env.IAMPECKISH_CLIENT_ID;
+    const clientId = (rawClientId && uuidRegex.test(rawClientId)) ? rawClientId : DEFAULT_CLIENT_ID;
+
     if (clientId) {
         config.headers["x-client-id"] = clientId;
         config.headers["client-id"] = clientId;
     }
 
-    const clientSecret = creds.CLIENT_SECRET || creds.clientSecret || headersObj["x-client-secret"] || headersObj["client-secret"];
+    const clientSecret = creds.CLIENT_SECRET || creds.clientSecret || headersObj["x-client-secret"] || headersObj["client-secret"] || process.env.IAMPECKISH_CLIENT_SECRET;
     if (clientSecret) {
         config.headers["x-client-secret"] = clientSecret;
         config.headers["client-secret"] = clientSecret;
