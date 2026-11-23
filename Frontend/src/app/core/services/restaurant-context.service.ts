@@ -60,7 +60,7 @@ export class RestaurantContextService {
     const ctx = this.currentContextSignal();
     const parts = [
       `URL_PATH=${environment.peckishApiUrl}`,
-      `USERNAME=${environment.clientId}`,
+      `USERNAME=${environment.clientUser}`,
       `PASSWORD=${environment.clientSecret}`,
       `CLIENT_ID=${environment.clientId}`,
       `CLIENT_SECRET=${environment.clientSecret}`,

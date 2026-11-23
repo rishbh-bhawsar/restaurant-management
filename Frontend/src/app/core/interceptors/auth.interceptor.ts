@@ -9,13 +9,14 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { RestaurantContextService } from '../services/restaurant-context.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   constructor(
     private authService: AuthService,
     private restaurantContext: RestaurantContextService
-  ) {}
+  ) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const isAuthEndpoint = request.url.includes('/auth/signin') || request.url.includes('/auth/login');
@@ -45,8 +46,8 @@ export class AuthInterceptor implements HttpInterceptor {
     // Attach Peckish and backend tenant headers
     headers = headers
       .set('URL_PARAMETER', urlParam)
-      .set('x-client-id', 'mubashir@wenodo.com')
-      .set('x-client-secret', 'Mubbi@4321');
+      .set('x-client-id', environment.clientId)
+      .set('x-client-secret', environment.clientSecret);
 
     // Attach entityId and branchId query params if not already attached
     let params = request.params;
